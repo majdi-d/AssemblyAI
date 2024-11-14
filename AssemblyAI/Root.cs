@@ -1,77 +1,339 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AssemblyAI.Data
+﻿namespace AssemblyAI.Data
 {
-    public class ContentSafetyLabels
+    using System;
+    using System.Collections.Generic;
+
+    using System.Globalization;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+
+    public partial class Root
     {
-        public string status { get; set; }
-        public List<object> results { get; set; }
-        public Summary summary { get; set; }
-        public SeverityScoreSummary severity_score_summary { get; set; }
+        [JsonProperty("id")]
+        public Guid Id { get; set; }
+
+        [JsonProperty("audio_url")]
+        public Uri AudioUrl { get; set; }
+
+        [JsonProperty("status")]
+        public string Status { get; set; }
+
+        [JsonProperty("language_code")]
+        public string LanguageCode { get; set; }
+
+        [JsonProperty("language_detection")]
+        public bool LanguageDetection { get; set; }
+
+        [JsonProperty("language_confidence")]
+        public double LanguageConfidence { get; set; }
+
+        [JsonProperty("text")]
+        public string Text { get; set; }
+
+        [JsonProperty("words")]
+        public SentimentAnalysisResult[] Words { get; set; }
+
+        [JsonProperty("utterances")]
+        public SentimentAnalysisResult[] Utterances { get; set; }
+
+        [JsonProperty("confidence")]
+        public double Confidence { get; set; }
+
+        [JsonProperty("audio_duration")]
+        public long AudioDuration { get; set; }
+
+        [JsonProperty("punctuate")]
+        public bool Punctuate { get; set; }
+
+        [JsonProperty("format_text")]
+        public bool FormatText { get; set; }
+
+        [JsonProperty("disfluencies")]
+        public bool Disfluencies { get; set; }
+
+        [JsonProperty("dual_channel")]
+        public bool DualChannel { get; set; }
+
+        [JsonProperty("webhook_auth")]
+        public bool WebhookAuth { get; set; }
+
+        [JsonProperty("speed_boost")]
+        public bool SpeedBoost { get; set; }
+
+        [JsonProperty("auto_highlights")]
+        public bool AutoHighlights { get; set; }
+
+        [JsonProperty("auto_highlights_result")]
+        public AutoHighlightsResult AutoHighlightsResult { get; set; }
+
+        [JsonProperty("word_boost")]
+        public object[] WordBoost { get; set; }
+
+        [JsonProperty("filter_profanity")]
+        public bool FilterProfanity { get; set; }
+
+        [JsonProperty("redact_pii")]
+        public bool RedactPii { get; set; }
+
+        [JsonProperty("redact_pii_audio")]
+        public bool RedactPiiAudio { get; set; }
+
+        [JsonProperty("speaker_labels")]
+        public bool SpeakerLabels { get; set; }
+
+        [JsonProperty("content_safety")]
+        public bool ContentSafety { get; set; }
+
+        [JsonProperty("content_safety_labels")]
+        public ContentSafetyLabels ContentSafetyLabels { get; set; }
+
+        [JsonProperty("iab_categories")]
+        public bool IabCategories { get; set; }
+
+        [JsonProperty("iab_categories_result")]
+        public ContentSafetyLabels IabCategoriesResult { get; set; }
+
+        [JsonProperty("auto_chapters")]
+        public bool AutoChapters { get; set; }
+
+        [JsonProperty("chapters")]
+        public Chapter[] Chapters { get; set; }
+
+        [JsonProperty("summarization")]
+        public bool Summarization { get; set; }
+
+        [JsonProperty("custom_topics")]
+        public bool CustomTopics { get; set; }
+
+        [JsonProperty("topics")]
+        public object[] Topics { get; set; }
+
+        [JsonProperty("sentiment_analysis")]
+        public bool SentimentAnalysis { get; set; }
+
+        [JsonProperty("sentiment_analysis_results")]
+        public SentimentAnalysisResult[] SentimentAnalysisResults { get; set; }
+
+        [JsonProperty("entity_detection")]
+        public bool EntityDetection { get; set; }
+
+        [JsonProperty("throttled")]
+        public bool Throttled { get; set; }
+
+        [JsonProperty("language_model")]
+        public string LanguageModel { get; set; }
+
+        [JsonProperty("acoustic_model")]
+        public string AcousticModel { get; set; }
     }
 
-    public class IabCategoriesResult
+    public partial class AutoHighlightsResult
     {
-        public string status { get; set; }
-        public List<object> results { get; set; }
-        public Summary summary { get; set; }
+        [JsonProperty("status")]
+        public string Status { get; set; }
+
+        [JsonProperty("results")]
+        public Result[] Results { get; set; }
     }
 
-    public class Root
+    public partial class Result
     {
-        public string id { get; set; }
-        public string audio_url { get; set; }
-        public string status { get; set; }
-        public string language_code { get; set; }
-        public bool language_detection { get; set; }
-        public string text { get; set; }
-        public List<Word> words { get; set; }
-        public double confidence { get; set; }
-        public int audio_duration { get; set; }
-        public bool punctuate { get; set; }
-        public bool format_text { get; set; }
-        public bool disfluencies { get; set; }
-        public bool webhook_auth { get; set; }
-        public bool speed_boost { get; set; }
-        public bool auto_highlights { get; set; }
-        public List<object> word_boost { get; set; }
-        public bool filter_profanity { get; set; }
-        public bool redact_pii { get; set; }
-        public bool redact_pii_audio { get; set; }
-        public bool speaker_labels { get; set; }
-        public bool content_safety { get; set; }
-        public ContentSafetyLabels content_safety_labels { get; set; }
-        public bool iab_categories { get; set; }
-        public IabCategoriesResult iab_categories_result { get; set; }
-        public bool auto_chapters { get; set; }
-        public bool summarization { get; set; }
-        public bool custom_topics { get; set; }
-        public List<object> topics { get; set; }
-        public bool sentiment_analysis { get; set; }
-        public bool entity_detection { get; set; }
-        public bool throttled { get; set; }
-        public string language_model { get; set; }
-        public string acoustic_model { get; set; }
+        [JsonProperty("count")]
+        public long Count { get; set; }
+
+        [JsonProperty("rank")]
+        public double Rank { get; set; }
+
+        [JsonProperty("text")]
+        public string Text { get; set; }
+
+        [JsonProperty("timestamps")]
+        public Timestamp[] Timestamps { get; set; }
     }
 
-    public class SeverityScoreSummary
+    public partial class Timestamp
+    {
+        [JsonProperty("start")]
+        public long Start { get; set; }
+
+        [JsonProperty("end")]
+        public long End { get; set; }
+    }
+
+    public partial class Chapter
+    {
+        [JsonProperty("gist")]
+        public string Gist { get; set; }
+
+        [JsonProperty("headline")]
+        public string Headline { get; set; }
+
+        [JsonProperty("summary")]
+        public string Summary { get; set; }
+
+        [JsonProperty("start")]
+        public long Start { get; set; }
+
+        [JsonProperty("end")]
+        public long End { get; set; }
+    }
+
+    public partial class ContentSafetyLabels
+    {
+        [JsonProperty("status")]
+        public string Status { get; set; }
+
+        [JsonProperty("results")]
+        public object[] Results { get; set; }
+
+        [JsonProperty("summary")]
+        public Summary Summary { get; set; }
+
+        [JsonProperty("severity_score_summary", NullValueHandling = NullValueHandling.Ignore)]
+        public Summary SeverityScoreSummary { get; set; }
+    }
+
+    public partial class Summary
     {
     }
 
-    public class Summary
+    public partial class SentimentAnalysisResult
     {
+        [JsonProperty("text")]
+        public string Text { get; set; }
+
+        [JsonProperty("start")]
+        public long Start { get; set; }
+
+        [JsonProperty("end")]
+        public long End { get; set; }
+
+        [JsonProperty("sentiment", NullValueHandling = NullValueHandling.Ignore)]
+        public Sentiment? Sentiment { get; set; }
+
+        [JsonProperty("confidence")]
+        public double Confidence { get; set; }
+
+        [JsonProperty("speaker")]
+        public Speaker Speaker { get; set; }
+
+        [JsonProperty("words", NullValueHandling = NullValueHandling.Ignore)]
+        public SentimentAnalysisResult[] Words { get; set; }
     }
 
-    public class Word
+    public enum Sentiment { Negative, Neutral, Positive };
+
+    public enum Speaker { A, B };
+
+    public partial class Root
     {
-        public double confidence { get; set; }
-        public int start { get; set; }
-        public int end { get; set; }
-        public string text { get; set; }
+        public static Root FromJson(string json) => JsonConvert.DeserializeObject<Root>(json, Converter.Settings);
     }
 
+    public static class Serialize
+    {
+        public static string ToJson(this Root self) => JsonConvert.SerializeObject(self, Converter.Settings);
+    }
+
+    internal static class Converter
+    {
+        public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+        {
+            MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
+            DateParseHandling = DateParseHandling.None,
+            Converters =
+            {
+                SentimentConverter.Singleton,
+                SpeakerConverter.Singleton,
+                new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
+            },
+        };
+    }
+
+    internal class SentimentConverter : JsonConverter
+    {
+        public override bool CanConvert(Type t) => t == typeof(Sentiment) || t == typeof(Sentiment?);
+
+        public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+        {
+            if (reader.TokenType == JsonToken.Null) return null;
+            var value = serializer.Deserialize<string>(reader);
+            switch (value)
+            {
+                case "NEGATIVE":
+                    return Sentiment.Negative;
+                case "NEUTRAL":
+                    return Sentiment.Neutral;
+                case "POSITIVE":
+                    return Sentiment.Positive;
+            }
+            throw new Exception("Cannot unmarshal type Sentiment");
+        }
+
+        public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+        {
+            if (untypedValue == null)
+            {
+                serializer.Serialize(writer, null);
+                return;
+            }
+            var value = (Sentiment)untypedValue;
+            switch (value)
+            {
+                case Sentiment.Negative:
+                    serializer.Serialize(writer, "NEGATIVE");
+                    return;
+                case Sentiment.Neutral:
+                    serializer.Serialize(writer, "NEUTRAL");
+                    return;
+                case Sentiment.Positive:
+                    serializer.Serialize(writer, "POSITIVE");
+                    return;
+            }
+            throw new Exception("Cannot marshal type Sentiment");
+        }
+
+        public static readonly SentimentConverter Singleton = new SentimentConverter();
+    }
+
+    internal class SpeakerConverter : JsonConverter
+    {
+        public override bool CanConvert(Type t) => t == typeof(Speaker) || t == typeof(Speaker?);
+
+        public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+        {
+            if (reader.TokenType == JsonToken.Null) return null;
+            var value = serializer.Deserialize<string>(reader);
+            switch (value)
+            {
+                case "A":
+                    return Speaker.A;
+                case "B":
+                    return Speaker.B;
+            }
+            throw new Exception("Cannot unmarshal type Speaker");
+        }
+
+        public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+        {
+            if (untypedValue == null)
+            {
+                serializer.Serialize(writer, null);
+                return;
+            }
+            var value = (Speaker)untypedValue;
+            switch (value)
+            {
+                case Speaker.A:
+                    serializer.Serialize(writer, "A");
+                    return;
+                case Speaker.B:
+                    serializer.Serialize(writer, "B");
+                    return;
+            }
+            throw new Exception("Cannot marshal type Speaker");
+        }
+
+        public static readonly SpeakerConverter Singleton = new SpeakerConverter();
+    }
 }
