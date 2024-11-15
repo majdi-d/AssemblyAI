@@ -1,7 +1,10 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.S3Events;
 using Amazon.S3;
+using Amazon.S3.Model;
 using Amazon.S3.Util;
+using AssemblyAI;
+using AssemblyAILambda.Processor;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -49,7 +52,7 @@ public class Function
         }
         else
         {
-            context.Logger.LogInformation($"API Key is successfully loaded, starting with {apiKey.Substring(4)}");
+            context.Logger.LogInformation($"API Key is successfully loaded, ending with ****{apiKey.Substring(apiKey.Length - 4)}");
         }
 
 
@@ -66,6 +69,29 @@ public class Function
             {
                 var response = await this.S3Client.GetObjectMetadataAsync(s3Event.Bucket.Name, s3Event.Object.Key);
                 context.Logger.LogInformation(response.Headers.ContentType);
+                // Construct the full S3 file path
+                var bucketName = s3Event.Bucket.Name;
+                var objectKey = s3Event.Object.Key;
+                // Download the file to /tmp (Lambda's temporary storage)
+                //var tmpFilePath = Path.Combine("/tmp", objectKey);
+                //await DownloadFileFromS3(bucketName, objectKey, tmpFilePath);
+
+
+
+
+                var fullFilePath = $"s3://{bucketName}/{objectKey}";
+                context.Logger.LogInformation($"The S3 file path is : {fullFilePath}");
+                var client = new AssemblyAIClient(Environment.GetEnvironmentVariable("ASSEMBLYAI_API_KEY"));
+                // Generate a pre-signed URL for StabilityAI to be able to access the file
+                var fileUrl = GeneratePresignedUrl(bucketName, objectKey);
+                context.Logger.LogInformation($"The pre-signed S3 file path is : {fileUrl}");
+                // Process the transcription using the StabilityAIProcessor
+                context.Logger.LogInformation($"Starting to process the transcription using StabilityAI API");
+                var result = await StabilityAIProcessor.ProcessTranscriptionAsync(client, fileUrl);
+                // Log or process the result
+                context.Logger.LogInformation($"Processed transcription with ID: {result.Id}");
+                // You can also store the result in S3, DynamoDB, etc.
+                context.Logger.LogInformation($"The transcribed text is: {result.Text}");
             }
             catch (Exception e)
             {
@@ -75,5 +101,35 @@ public class Function
                 throw;
             }
         }
+
     }
+    public string GeneratePresignedUrl(string bucketName, string objectKey)
+    {
+        var s3Client = new AmazonS3Client();
+        var request = new GetPreSignedUrlRequest
+        {
+            BucketName = bucketName,
+            Key = objectKey,
+            Expires = DateTime.UtcNow.AddMinutes(15) // URL expiration time
+        };
+        return s3Client.GetPreSignedURL(request);
+    }
+
+
+    //private async Task DownloadFileFromS3(string bucketName, string objectKey, string tmpFilePath)
+    //{
+    //    using (var s3Client = new AmazonS3Client())
+    //    {
+    //        var request = new GetObjectRequest
+    //        {
+    //            BucketName = bucketName,
+    //            Key = objectKey
+    //        };
+
+    //        using (var response = await s3Client.GetObjectAsync(request))
+    //        {
+    //            await response.WriteResponseStreamToFileAsync(tmpFilePath);
+    //        }
+    //    }
+    //}
 }
