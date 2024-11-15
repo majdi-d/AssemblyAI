@@ -18,21 +18,26 @@ namespace AssemblyAI
         static async Task Main(string[] args)
         {
             // Set up dependency injection
-            var serviceProvider = new ServiceCollection()
-                .AddAWSService<IAmazonDynamoDB>()
-                .AddAWSService<IAmazonS3>()                            // Register S3 service
-                .AddSingleton<IDynamoDBContext, DynamoDBContext>()     // Register DynamoDBContext
-                .AddTransient<LargeDataHandler>()                      // Register LargeDataHandler for S3 upload & DynamoDB reference
-                .BuildServiceProvider();
+            //var serviceProvider = new ServiceCollection()
+            //    .AddAWSService<IAmazonDynamoDB>()
+            //    .AddAWSService<IAmazonS3>()                            // Register S3 service
+            //    .AddSingleton<IDynamoDBContext, DynamoDBContext>()     // Register DynamoDBContext
+            //    .AddTransient<LargeDataHandler>()                      // Register LargeDataHandler for S3 upload & DynamoDB reference
+            //    .BuildServiceProvider();
 
             Console.WriteLine("Hello, World!");
             // Make sure the `AssemblyAI` NuGet package is added to your project
 
 
-            var apiKey = "b6a1a33b3e2a49a69dc45b8b2356ee74";
+            string? AssemblyAiApiKey = Environment.GetEnvironmentVariable("ASSEMBLYAI_API_KEY");
+            if (string.IsNullOrEmpty(AssemblyAiApiKey))
+            {
+                Console.WriteLine("Error: API key not found in environment variables.");
+                return;
+            }
             //var fileUrl = "https://assembly.ai/sports_injuries.mp3";
 
-            var client = new AssemblyAIClient(apiKey);
+            var client = new AssemblyAIClient(AssemblyAiApiKey);
 
             //// You can also transcribe a local file by passing in a file path
             var filePath = "C:\\Users\\m.dhissi\\source\\repos\\AssemblyAI\\AssemblyAI\\meeting.mp3";
@@ -54,37 +59,81 @@ namespace AssemblyAI
 
             transcript.EnsureStatusCompleted();
 
+            var result = new SummaryResult();
+
+            var dictList = new List<KeyValuePair<string, int>>();
+            if (transcript.Utterances is not null)
+            {
+                foreach (var u in transcript.Utterances)
+                {
+                    dictList.Add(new KeyValuePair<string, int>(u.Speaker.ToString(), u.Words.Count()));
+                }
+                // Group by speaker and calculate the total word count for each
+                var summary = dictList
+                    .GroupBy(pair => pair.Key)
+                    .Select(group => new { Speaker = group.Key, TotalWords = group.Sum(pair => pair.Value) });
+                foreach (var entry in summary)
+                {
+                    Console.WriteLine($"Speaker: {entry.Speaker}, Total Words: {entry.TotalWords}");
+                    result.NumberofSpeakers = entry.Speaker.Count();
+                    
+                }
+            }
+            else
+                Console.WriteLine("No Utterances available");
+
+
+            result.TotalNumberOfWords = transcript.Words?.Count() ?? 0;
+            result.Id = transcript.Id;
+            result.AudioUrl = transcript.AudioUrl;
+            result.Text = transcript.Text;
+            result.DetectedLanguage = transcript.LanguageCode.ToString();
+            result.AudioDuration = transcript.AudioDuration ?? 0;
+            result.NumberOfChapters = transcript.Chapters?.Count() ?? 0;
+            result.ConfidenceScore = transcript.Confidence ?? 0;
+            result.Highlights = transcript.AutoHighlightsResult?.Results
+                                .Select(x => new HighLight
+                                {
+                                    Text = x.Text,
+                                    Count = x.Count
+                                })
+                                .ToList();
+
+            result.SentimentAnalysisRecords = transcript.SentimentAnalysisResults?
+                                .Select(x => new SentimentAnalysis
+                                {
+                                    Text = x.Text,
+                                    Sentiment = x.Sentiment.ToString(),
+                                    Speaker = x.Speaker
+                                })
+                                .ToList();
+            //result.Summary = "";
+            string fullFilePath = "transcription_full_result.txt";
+            await WriteTranscriptToFileAsync(fullFilePath, JsonConvert.SerializeObject(result, Formatting.Indented));
+
+            
+
+            
+
             // Resolve LargeDataHandler from the service provider
-            var largeDataHandler = serviceProvider.GetRequiredService<LargeDataHandler>();
+            //var largeDataHandler = serviceProvider.GetRequiredService<LargeDataHandler>();
 
             // Upload transcript to S3 and save reference in DynamoDB
-            string bucketName = "assemblyai-challenge";  // Replace with your actual S3 bucket name
-            await largeDataHandler.StoreLargeDocumentAsync(transcript.Id.ToString(), bucketName, transcript.ToString());
+            //string bucketName = "assemblyai-challenge";  // Replace with your actual S3 bucket name
+            //await largeDataHandler.StoreLargeDocumentAsync(transcript.Id.ToString(), bucketName, transcript.ToString());
 
 
             //var rootData = Root.FromJson(transcript.ToString());
 
 
-            //var dictList = new List<KeyValuePair<string, int>>();
-            //foreach (var u in rootData.Utterances)
-            //{
-            //    dictList.Add(new KeyValuePair<string, int>(u.Speaker.ToString(), u.Words.Count()));
-            //}
-
 
             // Display
             //Console.WriteLine($"The number of words is {rootData.Words.Count()}");
             //Console.WriteLine($"The language is {rootData.LanguageCode}");
-            //// Group by speaker and calculate the total word count for each
-            //var summary = dictList
-            //    .GroupBy(pair => pair.Key)
-            //    .Select(group => new { Speaker = group.Key, TotalWords = group.Sum(pair => pair.Value) });
+            
 
             // Display the summary
-            //foreach (var entry in summary)
-            //{
-            //    Console.WriteLine($"Speaker: {entry.Speaker}, Total Words: {entry.TotalWords}");
-            //}
+            
 
             // Persisting
 
@@ -115,19 +164,19 @@ namespace AssemblyAI
 
         }
 
-        // Method to write the transcription text to a file asynchronously
-    //    static async Task WriteTranscriptToFileAsync(string filePath, string transcriptText)
-    //    {
-    //        try
-    //        {
-    //            // Write the transcription text to the file
-    //            await File.WriteAllTextAsync(filePath, transcriptText);
-    //}
-    //        catch (Exception ex)
-    //        {
-    //            Console.WriteLine($"Error writing to file: {ex.Message}");
-    //        }
-    //    }
+        //Method to write the transcription text to a file asynchronously
+        static async Task WriteTranscriptToFileAsync(string filePath, string transcriptText)
+        {
+            try
+            {
+                // Write the transcription text to the file
+                await File.WriteAllTextAsync(filePath, transcriptText);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error writing to file: {ex.Message}");
+            }
+        }
 
     }
 

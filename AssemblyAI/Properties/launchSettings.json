@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "AssemblyAI.Console": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASSEMBLYAI_API_KEY": "b6a1a33b3e2a49a69dc45b8b2356ee74"
+      }
+    }
+  }
+}
