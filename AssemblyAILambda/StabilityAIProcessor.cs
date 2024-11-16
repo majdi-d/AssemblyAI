@@ -6,6 +6,7 @@ using AssemblyAILambda;
 using AssemblyAILambda.Data;
 using AssemblyAI;
 using AssemblyAI.Transcripts;
+using System.Text.RegularExpressions;
 
 namespace AssemblyAILambda.Processor
 {
@@ -66,7 +67,7 @@ namespace AssemblyAILambda.Processor
             result.TotalNumberOfWords = transcript.Words?.Count() ?? 0;
             result.Id = transcript.Id;
             result.AudioUrl = transcript.AudioUrl;
-            result.Text = transcript.Text;
+            result.Text = Regex.Unescape(transcript.Text ?? "No text available");
             result.DetectedLanguage = transcript.LanguageCode.ToString();
             result.AudioDuration = transcript.AudioDuration ?? 0;
             result.NumberOfChapters = transcript.Chapters?.Count() ?? 0;

@@ -5,6 +5,8 @@ using Amazon.S3.Model;
 using Amazon.S3.Util;
 using AssemblyAI;
 using AssemblyAILambda.Processor;
+using AssemblyAILambda.Storage;
+using System.Text.RegularExpressions;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -91,7 +93,13 @@ public class Function
                 // Log or process the result
                 context.Logger.LogInformation($"Processed transcription with ID: {result.Id}");
                 // You can also store the result in S3, DynamoDB, etc.
-                context.Logger.LogInformation($"The transcribed text is: {result.Text}");
+                context.Logger.LogInformation($"The transcribed/un-escaped text is: {Regex.Unescape(result.Text ?? "No text available")}");
+
+                // Store the transcription result in the S3 bucket
+                var outputObjectKey = $"{objectKey}-transcription.json";
+                var targetBucket = "assemblyai-challenge-transcripts";
+                await TranscriptStorage.UploadTranscriptionToS3Async(S3Client, targetBucket, outputObjectKey, result);
+                context.Logger.LogInformation($"Transcription result uploaded to S3 {targetBucket} bucket under {outputObjectKey}");
             }
             catch (Exception e)
             {
