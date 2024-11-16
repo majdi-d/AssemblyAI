@@ -118,7 +118,7 @@ public class Function
         {
             BucketName = bucketName,
             Key = objectKey,
-            Expires = DateTime.UtcNow.AddMinutes(15) // URL expiration time
+            Expires = DateTime.UtcNow.AddSeconds(180) // URL expiration time
         };
         return s3Client.GetPreSignedURL(request);
     }

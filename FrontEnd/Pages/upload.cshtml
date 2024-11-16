@@ -1,0 +1,35 @@
+﻿@page
+@model UploadModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload File to S3</title>
+    <script>
+        function disableUploadButton() {
+            // Disable the button when clicked
+            document.getElementById("uploadButton").disabled = true;
+            document.getElementById("uploadButton").innerText = "Uploading...";
+        }
+
+        function enableUploadButton() {
+            // Enable the button after the upload is complete
+            document.getElementById("uploadButton").disabled = false;
+            document.getElementById("uploadButton").innerText = "Upload";
+        }
+    </script>
+</head>
+<body>
+    <h1>Upload a File to S3</h1>
+    <form method="post" enctype="multipart/form-data" id="uploadForm">
+        <label for="file">Choose a file:</label>
+        <input type="file" id="file" name="file" />
+        <button type="submit" id="uploadButton" onclick="disableUploadButton()">Upload</button>
+    </form>
+
+    @if (Model.UploadResult != null)
+    {
+        <p>@Model.UploadResult</p>
+    }
+</body>
+</html>

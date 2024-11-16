@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AssemblyAI.Console", "Assem
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AssemblyAILambda", "AssemblyAILambda\AssemblyAILambda.csproj", "{0A7C8B0E-23ED-45C1-BC43-3EA03EF9E63C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontEnd", "FrontEnd\FrontEnd.csproj", "{E4B0FB57-2840-40BB-AB20-7642AAF380FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{0A7C8B0E-23ED-45C1-BC43-3EA03EF9E63C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A7C8B0E-23ED-45C1-BC43-3EA03EF9E63C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A7C8B0E-23ED-45C1-BC43-3EA03EF9E63C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4B0FB57-2840-40BB-AB20-7642AAF380FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4B0FB57-2840-40BB-AB20-7642AAF380FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4B0FB57-2840-40BB-AB20-7642AAF380FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4B0FB57-2840-40BB-AB20-7642AAF380FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
