@@ -1,3 +1,6 @@
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DocumentModel;
+using Amazon.DynamoDBv2.Model;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.S3Events;
 using Amazon.S3;
@@ -6,6 +9,7 @@ using Amazon.S3.Util;
 using AssemblyAI;
 using AssemblyAILambda.Processor;
 using AssemblyAILambda.Storage;
+using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -16,7 +20,7 @@ namespace AssemblyAILambda;
 public class Function
 {
     IAmazonS3 S3Client { get; set; }
-
+    IAmazonDynamoDB DynamoDbClient { get; set; }
     /// <summary>
     /// Default constructor. This constructor is used by Lambda to construct the instance. When invoked in a Lambda environment
     /// the AWS credentials will come from the IAM role associated with the function and the AWS region will be set to the
@@ -25,15 +29,17 @@ public class Function
     public Function()
     {
         S3Client = new AmazonS3Client();
+        DynamoDbClient = new AmazonDynamoDBClient();
     }
 
     /// <summary>
     /// Constructs an instance with a preconfigured S3 client. This can be used for testing outside of the Lambda environment.
     /// </summary>
     /// <param name="s3Client"></param>
-    public Function(IAmazonS3 s3Client)
+    public Function(IAmazonS3 s3Client, IAmazonDynamoDB dynamoDbClient)
     {
         this.S3Client = s3Client;
+        this.DynamoDbClient = dynamoDbClient;
     }
 
     /// <summary>
@@ -95,6 +101,19 @@ public class Function
                 // You can also store the result in S3, DynamoDB, etc.
                 context.Logger.LogInformation($"The transcribed/un-escaped text is: {Regex.Unescape(result.Text ?? "No text available")}");
 
+                // Store transcription result in DynamoDB
+                var item = new Amazon.DynamoDBv2.DocumentModel.Document
+                {
+                    ["Id"] = result.Id,
+                    ["Text"] = result.Text ?? "No text available",
+                    ["Timestamp"] = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
+                };
+
+                await StoreTranscriptionInDynamoDB(item, context);
+
+                context.Logger.LogInformation($"Transcription result stored in DynamoDB with ID: {result.Id}");
+
+
                 // Store the transcription result in the S3 bucket
                 var outputObjectKey = $"{objectKey}-transcription.json";
                 var targetBucket = "assemblyai-challenge-transcripts";
@@ -123,6 +142,26 @@ public class Function
         return s3Client.GetPreSignedURL(request);
     }
 
+    private async Task StoreTranscriptionInDynamoDB(Amazon.DynamoDBv2.DocumentModel.Document transcriptionItem, ILambdaContext context)
+    {
+        var putItemRequest = new PutItemRequest
+        {
+            TableName = "AssemblyAI",
+            Item = transcriptionItem.ToAttributeMap()
+        };
+
+        try
+        {
+            await DynamoDbClient.PutItemAsync(putItemRequest);
+            context.Logger.LogInformation("Transcription data successfully stored in DynamoDB.");
+        }
+        catch (Exception ex)
+        {
+            context.Logger.LogError("Error storing transcription data in DynamoDB.");
+            context.Logger.LogError(ex.Message);
+            throw;
+        }
+    }
 
     //private async Task DownloadFileFromS3(string bucketName, string objectKey, string tmpFilePath)
     //{
